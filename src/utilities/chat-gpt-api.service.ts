@@ -14,7 +14,7 @@ export async function askToChatGpt(query: string | undefined, apiKey: string) {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             body: JSON.stringify({
-                model: "gpt-3.5-turbo",
+                model: "gpt-4-1106-preview",
                 messages: [{ role: "user", content: query }],
                 temperature: 0.7
             }),
@@ -56,7 +56,7 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
         const response = fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             body: JSON.stringify({
-                model: "gpt-3.5-turbo",
+                model: "gpt-4-1106-preview",
                 messages: [{ role: "user", content: query }],
                 // temperature: 0.7,
                 temperature: Number(temperature),
@@ -77,14 +77,22 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
                     for (let i = 0; i < eventStr.length; i++) {
                         const str = eventStr[i];
                         if (str === 'data: [DONE]') {
-                            break;
+                        break;
                         }
                         if (str && str.slice(0, 6) === 'data: ') {
                             const jsonStr = str.slice(6);
-                            const data: any = JSON.parse(jsonStr);
-                            const thisContent = data.choices[0].delta?.content || '';
-                            content += thisContent;
-                            observer.next(thisContent);
+                            try {
+                                const data: any = JSON.parse(jsonStr);
+                                const thisContent = data.choices[0].delta?.content || '';
+                                content += thisContent;
+                                observer.next(thisContent);
+                            } catch (error) {
+                                if (error instanceof Error) {
+                                console.log('error message: ', error.message);
+                                //the issue I get is the initial data coming back is not valid JSON
+                                //observer.error(error.message);
+                                }   
+                            }
                         }
                     }
                 }

@@ -4,6 +4,11 @@
 	--input-padding-horizontal: 4px;
 	--input-margin-vertical: 4px;
 	--input-margin-horizontal: 0;
+	--height: 100%;
+}
+
+html  {
+	height: 99%;
 }
 
 body {
@@ -12,7 +17,9 @@ body {
 	font-size: var(--vscode-font-size);
 	font-weight: var(--vscode-font-weight);
 	font-family: var(--vscode-font-family);
-	/* background-color: var(--vscode-editor-background); */
+	height: 100%;
+    /*margin: 0;
+	 background-color: var(--vscode-editor-background); */
 }
 
 ol,
@@ -43,6 +50,7 @@ code {
 	font-size: var(--vscode-editor-font-size);
 	font-family: var(--vscode-editor-font-family);
 }
+
 
 button {
 	border: none;
@@ -113,6 +121,8 @@ textarea::placeholder {
 
 .code {
 	white-space: pre-wrap;
+	color: #88b2cb; /* #cccccc */
+	background-color: transparent;
 }
 
 .danger {
@@ -191,4 +201,22 @@ div.desc {
 	padding: 15px;
 	text-align: center;
 	color: white;
+}
+
+
+.content-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.top-section {
+    flex-grow: 1; /* This makes the top section fill the available space */
+    overflow-y: auto; /* Add scroll if content overflows */
+	padding: 10px;
+}
+
+.bottom-section {
+    /* Set a fixed height for the footer */
+    height: 140px; /* Adjust as needed */
 }

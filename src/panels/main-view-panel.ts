@@ -134,20 +134,24 @@ export class ChatGptPanel {
             <link href="${styleVSCodeUri}" rel="stylesheet">
             <link rel="icon" type="image/jpeg" href="${logoMainPath}">
           </head>
-          <body>          
+          <body>        
+          <div class="content-container">  
+          <div class="top-section">
+			<ul id="history-id">
+			</ul>
             <p class="answer-header mt-30"> Answer : </p>            
             <pre><code class="code" id="answers-id"></code></pre>
+            </div>
+            <div class="bottom-section">
             <vscode-text-area class="text-area mt-20" id="question-text-id" cols="100">Question:</vscode-text-area>
-            <div class="flex-container">
+            <div class="flex-container" style="margin-bottom:15px">
               <vscode-button id="ask-button-id">Ask</vscode-button>
               <vscode-button class="danger" id="clear-button-id">Clear</vscode-button>
               <vscode-button class="danger" id="clear-history-button">Clear History</vscode-button>
               <vscode-progress-ring id="progress-ring-id"></vscode-progress-ring>
             </div>
-
-            <p class="chat-history">Chat History</p>
-			<ul id="history-id">
-			</ul>
+            </div>
+            </div>
             <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
           </body>
         </html>

@@ -116,8 +116,12 @@ export function stateManager(context: vscode.ExtensionContext) {
   }
   
   function readHistory() {
+    var historyData =  context.globalState.get('historyData')
+    if(historyData == undefined){
+      historyData = [];
+    }
     return {
-      historyData: context.globalState.get('historyData')
+      historyData
     };
   }
 

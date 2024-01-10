@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { getStoreData, getNonce, getAsWebviewUri, setHistoryData, getVSCodeUri, getHistoryData } from "../utilities/utility.service";
+import { getStoreData, getNonce, getAsWebviewUri, setHistoryData, getVSCodeUri, getHistoryData, setChatData,getChatData } from "../utilities/utility.service";
 import { askToChatGptAsStream } from "../utilities/chat-gpt-api.service";
 
 /**
@@ -179,14 +179,33 @@ export class ChatGptPanel {
         const storeData = getStoreData(this._context);
         const existApiKey = storeData.apiKey;
         const existTemperature = storeData.temperature;
+        var asssistantMessage = { role: "system", content: "" };
         if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
             vscode.window.showInformationMessage('Please add your ChatGpt api key!');
         } else if (existTemperature == undefined || existTemperature == null || existTemperature == 0) {
             vscode.window.showInformationMessage('Please add temperature!');
         }
         else {
-            askToChatGptAsStream(question, existApiKey, existTemperature).subscribe(answer => {
-                ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'answer', data: answer });
+            // make the message
+            let questionMessage = { role: "user", content: question };
+            // get previous messages
+            let messages = getChatData(this._context);
+            //if it's empty this is where we add the system message
+            if (messages.length == 0) {
+                messages.push({ role: "system", content: "" });
+            }
+            messages.push(questionMessage);
+            setChatData(this._context, messages);
+            askToChatGptAsStream(messages, existApiKey, existTemperature).subscribe(answer => {
+                //check for 'END MESSAGE' string, 
+                if (answer == 'END MESSAGE') {
+                    var chatData =getChatData(this._context);
+                    chatData.push(asssistantMessage);
+                    setChatData(this._context, chatData);
+                } else { 
+                    asssistantMessage.content += answer;
+                    ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'answer', data: answer });
+                }
             });
         }
     }

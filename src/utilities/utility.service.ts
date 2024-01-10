@@ -77,6 +77,16 @@ export function setHistoryData(context: vscode.ExtensionContext, historyData: an
   }
 }
 
+export function setChatData(context: vscode.ExtensionContext, chatData: any) {
+  const state = stateManager(context);
+
+  if (chatData !== undefined) {
+    state.writeChat({
+      chatData: chatData
+    });
+  }
+}
+
 /**
  * Gets storeData from context.globalState.
  * @param context :vscode.ExtensionContext
@@ -96,6 +106,13 @@ export function getHistoryData(context: vscode.ExtensionContext): any {
   return historyData as any;
 }
 
+export function getChatData(context: vscode.ExtensionContext): any {
+  const state = stateManager(context);
+
+  const { chatData } = state.readChat();
+  return chatData as any;
+}
+
 /**
 * State Manager has read and write methods for api key. This methods set and get the api key from context.globalState.
 * @param context :vscode.ExtensionContext.
@@ -106,7 +123,9 @@ export function stateManager(context: vscode.ExtensionContext) {
     read,
     write,
     writeHistory,
-    readHistory
+    readHistory,
+    writeChat,
+    readChat,
   };
 
   function read() {
@@ -125,8 +144,22 @@ export function stateManager(context: vscode.ExtensionContext) {
     };
   }
 
+  function readChat() {
+    var chatData =  context.globalState.get('chatData')
+    if(chatData == undefined){
+      chatData = [];
+    }
+    return {
+      chatData
+    };
+  }
+
   function write(newState: any) {
     context.globalState.update('storeData', newState.storeData);
+  }
+
+  function writeChat(newState: any) {
+    context.globalState.update('chatData', newState.chatData);
   }
 
   function writeHistory(newState: any) {

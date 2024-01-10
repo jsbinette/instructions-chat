@@ -16,7 +16,7 @@ export async function askToChatGpt(query: string | undefined, apiKey: string) {
             body: JSON.stringify({
                 model: "gpt-4-1106-preview",
                 messages: [{ role: "user", content: query }],
-                temperature: 0.7
+                temperature: 1
             }),
             headers: {
                 "Content-Type": 'application/json',
@@ -49,7 +49,7 @@ export async function askToChatGpt(query: string | undefined, apiKey: string) {
  * @param temperature.
  * @returns 
  */
-export function askToChatGptAsStream(query: string | undefined, apiKey: string, temperature: number): Observable<string> {
+export function askToChatGptAsStream(query: Array<any> | undefined, apiKey: string, temperature: number): Observable<string> {
 
     return new Observable<string>(observer => {
         // 👇️ const response: Response
@@ -57,7 +57,7 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
             method: 'POST',
             body: JSON.stringify({
                 model: "gpt-4-1106-preview",
-                messages: [{ role: "user", content: query }],
+                messages: query,
                 // temperature: 0.7,
                 temperature: Number(temperature),
                 stream: true
@@ -77,7 +77,7 @@ export function askToChatGptAsStream(query: string | undefined, apiKey: string, 
                     for (let i = 0; i < eventStr.length; i++) {
                         const str = eventStr[i];
                         if (str === 'data: [DONE]') {
-                        break;
+                            observer.next('END MESSAGE');
                         }
                         if (str && str.slice(0, 6) === 'data: ') {
                             const jsonStr = str.slice(6);

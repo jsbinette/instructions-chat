@@ -254,8 +254,8 @@ export class ChatGptPanel {
     private async getSummary(variables: string, text: string): Promise<string> {
         const params = variables.split(',');
         const name = params[0];
-        let ratio = params.length > 1 ? params[1] : '1/10';
-        ratio = ratio.replace('1/', 'one_in_');
+        let orig_ratio = params.length > 1 ? params[1] : '1/10';
+        let ratio = orig_ratio.replace('1/', 'one_in_');
         let workspacePath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
         const summaryDirPath = path.join(workspacePath, '.vscode', 'summaries');
         const summarySourceDirPath = path.join(workspacePath, '.vscode', 'summary_sources');
@@ -276,7 +276,7 @@ export class ChatGptPanel {
             // Update the summary
             fs.writeFileSync(summarySourcePath, text);
             const storeData = getStoreData(this._context);
-            const summary = await askToChatGpt(`Please summarize the following text: '''${text}''' The length of the summary should be 1/${ratio} of the original text. Output only the summary. You can use markdown to format the summary.`, storeData.apiKey);
+            const summary = await askToChatGpt(`Please summarize the following text: '''${text}''' The length of the summary should be ${orig_ratio} of the original text. Output only the summary. You can use markdown to format the summary.`, storeData.apiKey);
             fs.writeFileSync(summaryFilePath, summary);
         }
 

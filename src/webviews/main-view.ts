@@ -29,10 +29,14 @@ vscode.postMessage({
 
 // Declare Html elements
 const answer = document.getElementById("answers-id") as HTMLElement;
+const instructions = document.getElementById("instructions-id") as HTMLElement;
 const chatQuestionTextArea = document.getElementById("question-text-id") as TextArea;
 const askButton = document.getElementById("ask-button-id") as Button;
+const asknoinstrButton = document.getElementById("ask-no-instructions-button-id") as Button;
 const clearButton = document.getElementById("clear-button-id") as Button;
+const showHistoryButton = document.getElementById("show-history-button");
 const clearHistoryButton = document.getElementById("clear-history-button");
+const showInstructionsButton = document.getElementById("show-instructions-button");
 
 // image
 const askImageButton = document.getElementById("ask-image-button-id") as Button;
@@ -48,8 +52,11 @@ function main() {
 
     // Add the eventLsteners.
     askButton?.addEventListener("click", handleAskClick);
+    asknoinstrButton?.addEventListener("click", handleAskNoInstrClick);
     clearButton?.addEventListener("click", handleClearClick);
+    showHistoryButton?.addEventListener("click", handleShowHistoryButtonClick);
     clearHistoryButton?.addEventListener("click", handleClearHistoryButtonClick);
+    showInstructionsButton?.addEventListener("click", handleShowInstructionsButtonClick);
 
     // image button events
     askImageButton?.addEventListener("click", handleImageAskClick);
@@ -98,6 +105,8 @@ function main() {
                     showErrorMessage(message.data);
                     hideProgressRing();
                     break;
+                case 'instructions-data':
+                    instructions.innerHTML = message.data
                 case 'error':
                     break;
             }
@@ -121,10 +130,42 @@ function handleAskClick() {
         data: chatQuestionTextArea.value,
     });
 
+    var data = document.createElement('div');
+    data.className = 'userChatLog'
+    data.addEventListener('click', () => {
+        onHistoryClicked(chatQuestionTextArea.value);
+    });
+    data.appendChild(document.createTextNode(chatQuestionTextArea.value));
+    answer?.appendChild(data);
     // Clear answer filed.
-    answer.innerHTML = '';
+    //answer.innerHTML = '';
 
     addHistory(chatQuestionTextArea.value);
+    chatQuestionTextArea.value = ''
+
+}
+
+function handleAskNoInstrClick() {
+
+    // Send messages to Panel.
+    vscode.postMessage({
+        command: "press-ask-no-instr-button",
+        data: chatQuestionTextArea.value,
+    });
+
+    var data = document.createElement('div');
+    data.className = 'userChatLog'
+    data.addEventListener('click', () => {
+        onHistoryClicked(chatQuestionTextArea.value);
+    });
+    data.appendChild(document.createTextNode(chatQuestionTextArea.value));
+    answer?.appendChild(data);
+    // Clear answer filed.
+    //answer.innerHTML = '';
+
+    addHistory(chatQuestionTextArea.value);
+    chatQuestionTextArea.value = ''
+
 }
 
 /**
@@ -136,6 +177,21 @@ function handleClearClick() {
 
     // Clear question field.
     chatQuestionTextArea.value = '';
+
+    // Clear chatData
+    vscode.postMessage({
+        command: "clear-chat",
+    });
+}
+
+
+function handleShowHistoryButtonClick() {
+    const el = document.getElementById('history-id');
+    if (el?.style.getPropertyValue("display") == "none") el?.style.setProperty("display", "block")
+    else el?.style.setProperty("display", "none")
+    const el2 = document.getElementById('history-header');
+    if (el2?.style.getPropertyValue("display") == "none") el2?.style.setProperty("display", "block")
+    else el2?.style.setProperty("display", "none")
 }
 
 /**
@@ -150,6 +206,19 @@ function handleClearHistoryButtonClick() {
     });
 
     updateHistoryList()
+}
+
+function handleShowInstructionsButtonClick() {
+    const el = document.getElementById('instructions-id');
+    if (el?.style.getPropertyValue("display") == "none")  {
+        vscode.postMessage({ command: 'show-instructions-set' });
+        el?.style.setProperty("display", "block")
+    }
+    else el?.style.setProperty("display", "none")
+    
+    const el2 = document.getElementById('instructions-header');
+    if (el2?.style.getPropertyValue("display") == "none") el2?.style.setProperty("display", "block")
+    else el2?.style.setProperty("display", "none")
 }
 
 /**
@@ -203,8 +272,15 @@ function onHistoryClicked(question: string) {
     vscode.postMessage({ command: 'history-question-clicked', data: question });
 
     // clear fields
-    answer.innerHTML = '';
-    chatQuestionTextArea.value = question;
+    //answer.innerHTML = '';
+    var data = document.createElement('div');
+    data.addEventListener('click', () => {
+        onHistoryClicked(question);
+    });
+    data.className = 'userChatLog'
+    data.appendChild(document.createTextNode(question));
+    answer?.appendChild(data);
+    //chatQuestionTextArea.value = question;
 }
 
 /**

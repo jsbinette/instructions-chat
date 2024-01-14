@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
-import { getStoreData, getNonce, getAsWebviewUri, setHistoryData, getVSCodeUri, getHistoryData, setChatData,getChatData } from "../utilities/utility.service";
-import { askToChatGptAsStream } from "../utilities/chat-gpt-api.service";
+import * as fs from 'fs';
+import * as path from 'path';
+import { getStoreData, getNonce, getAsWebviewUri, setHistoryData, getVSCodeUri, getHistoryData, setChatData, getChatData } from "../utilities/utility.service";
+import { askToChatGpt, askToChatGptAsStream } from "../utilities/chat-gpt-api.service";
 
 /**
  * Webview panel class
@@ -26,9 +28,12 @@ export class ChatGptPanel {
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
         this._panel.webview.html = this._getWebviewContent(this._panel.webview, extensionUri);
-        this._setWebviewMessageListener(this._panel.webview);     
+        this._setWebviewMessageListener(this._panel.webview);
 
         this.sendHistoryAgain();
+
+        //clear chat
+        setChatData(this._context, []);
     }
 
     /**
@@ -86,12 +91,16 @@ export class ChatGptPanel {
      */
     private _setWebviewMessageListener(webview: vscode.Webview) {
         webview.onDidReceiveMessage(
-            (message: any) => {
+            async (message: any) => {
                 const command = message.command;
 
                 switch (command) {
                     case "press-ask-button":
-                        this.askToChatGpt(message.data);
+                        this._askToChatGpt(message.data, await this.getInstuctionSet());
+                        this.addHistoryToStore(message.data);
+                        return;
+                    case "press-ask-no-instr-button":
+                        this._askToChatGpt(message.data);
                         this.addHistoryToStore(message.data);
                         return;
                     case "history-question-clicked":
@@ -102,6 +111,12 @@ export class ChatGptPanel {
                         break;
                     case "clear-history":
                         this.clearHistory();
+                        break;
+                    case "clear-chat":
+                        this.clearChat();
+                        break;
+                    case "show-instructions-set":
+                        await this.showInstuctionSet();
                         break;
                 }
             },
@@ -137,17 +152,23 @@ export class ChatGptPanel {
           <body>        
           <div class="content-container">  
           <div class="top-section">
-			<ul id="history-id">
+            <p id="history-header" class="answer-header" style="display:none"> Question History: </p>   
+            <ul id="history-id"  style="display:none">
 			</ul>
-            <p class="answer-header mt-30"> Answer : </p>            
-            <pre><code class="code" id="answers-id"></code></pre>
+            <p id="instructions-header" class="answer-header" style="display:none"> Instructions: </p>   
+            <pre class="pre"><code class="code instructions" id="instructions-id" style="display:none"></code></pre>
+            <p class="answer-header"> Chat: </p>            
+            <pre class="pre"><code class="code" id="answers-id"></code></pre>
             </div>
             <div class="bottom-section">
             <vscode-text-area class="text-area mt-20" id="question-text-id" cols="100">Question:</vscode-text-area>
             <div class="flex-container" style="margin-bottom:15px">
               <vscode-button id="ask-button-id">Ask</vscode-button>
+              <vscode-button id="ask-no-instructions-button-id">Ask (No instructions)</vscode-button>
               <vscode-button class="danger" id="clear-button-id">Clear</vscode-button>
-              <vscode-button class="danger" id="clear-history-button">Clear History</vscode-button>
+              <vscode-button class="grayish" id="show-history-button">Show History</vscode-button>
+              <vscode-button class="grayish" id="clear-history-button">Clear History</vscode-button>
+              <vscode-button id="show-instructions-button" class="instruction-button">Show Instructions</vscode-button>
               <vscode-progress-ring id="progress-ring-id"></vscode-progress-ring>
             </div>
             </div>
@@ -163,7 +184,7 @@ export class ChatGptPanel {
      * @param hisrtoryQuestion :string
      */
     public clickHistoryQuestion(hisrtoryQuestion: string) {
-        this.askToChatGpt(hisrtoryQuestion);
+        this._askToChatGpt(hisrtoryQuestion);
     }
 
     public sendHistoryAgain() {
@@ -175,11 +196,11 @@ export class ChatGptPanel {
      * Ask to ChatGpt a question ans send 'answer' command with data to mainview.js.
      * @param question :string
      */
-    private askToChatGpt(question: string) {
+    private _askToChatGpt(question: string, system_content: string = "") {
         const storeData = getStoreData(this._context);
         const existApiKey = storeData.apiKey;
         const existTemperature = storeData.temperature;
-        var asssistantMessage = { role: "system", content: "" };
+        var asssistantResponse = { role: "assistant", content: '' };
         if (existApiKey == undefined || existApiKey == null || existApiKey == '') {
             vscode.window.showInformationMessage('Please add your ChatGpt api key!');
         } else if (existTemperature == undefined || existTemperature == null || existTemperature == 0) {
@@ -192,37 +213,107 @@ export class ChatGptPanel {
             let messages = getChatData(this._context);
             //if it's empty this is where we add the system message
             if (messages.length == 0) {
-                messages.push({ role: "system", content: "" });
+                messages.push({ role: "system", content: system_content });
             }
             messages.push(questionMessage);
             setChatData(this._context, messages);
             askToChatGptAsStream(messages, existApiKey, existTemperature).subscribe(answer => {
                 //check for 'END MESSAGE' string, 
                 if (answer == 'END MESSAGE') {
-                    var chatData =getChatData(this._context);
-                    chatData.push(asssistantMessage);
+                    var chatData = getChatData(this._context);
+                    chatData.push(asssistantResponse);
                     setChatData(this._context, chatData);
-                } else { 
-                    asssistantMessage.content += answer;
+                } else {
+                    asssistantResponse.content += answer;
                     ChatGptPanel.currentPanel?._panel.webview.postMessage({ command: 'answer', data: answer });
                 }
             });
         }
     }
 
-    clearHistory() {       
-        this.searchHistory=[];
+    clearHistory() {
+        this.searchHistory = [];
         setHistoryData(this._context, this.searchHistory);
     }
 
+    clearChat() {
+        setChatData(this._context, []);
+    }
+
     addHistoryToStore(question: string) {
-        this.searchHistory=getHistoryData(this._context);
+        this.searchHistory = getHistoryData(this._context);
         this.searchHistory.push(question);
         setHistoryData(this._context, this.searchHistory);
     }
 
     getHistoryFromStore() {
         const history = getHistoryData(this._context);
-       return history;
+        return history;
     }
+
+    private async getSummary(variables: string, text: string): Promise<string> {
+        const params = variables.split(',');
+        const name = params[0];
+        let ratio = params.length > 1 ? params[1] : '1/10';
+        ratio = ratio.replace('1/', 'one_in_');
+        let workspacePath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
+        const summaryDirPath = path.join(workspacePath, '.vscode', 'summaries');
+        const summarySourceDirPath = path.join(workspacePath, '.vscode', 'summary_sources');
+
+        // Ensure the directories exist
+        if (!fs.existsSync(summaryDirPath)) {
+            fs.mkdirSync(summaryDirPath, { recursive: true });
+        }
+        if (!fs.existsSync(summarySourceDirPath)) {
+            fs.mkdirSync(summarySourceDirPath, { recursive: true });
+        }
+
+
+        const summaryFilePath = path.join(summaryDirPath, `${name}_${ratio}.md`);
+        const summarySourcePath = path.join(summarySourceDirPath, `${name}_${ratio}.txt`);
+
+        if (!fs.existsSync(summarySourcePath) || fs.readFileSync(summarySourcePath, 'utf8') !== text || !fs.existsSync(summaryFilePath)) {
+            // Update the summary
+            fs.writeFileSync(summarySourcePath, text);
+            const storeData = getStoreData(this._context);
+            const summary = await askToChatGpt(`Please summarize the following text: '''${text}''' The length of the summary should be 1/${ratio} of the original text. Output only the summary. You can use markdown to format the summary.`, storeData.apiKey);
+            fs.writeFileSync(summaryFilePath, summary);
+        }
+
+        return fs.readFileSync(summaryFilePath, 'utf8');
+    }
+
+    private async processInstructionsFile(): Promise<void> {
+        const summarizeRegex = /@summarize\((.*?)\)\s([\s\S]*?)@end-summarize/g;
+
+        const inputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions.md');
+        const outputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions-processed.md');
+        const content = fs.readFileSync(inputFilename, 'utf8'); let processedContent = content;
+        const matches = [...content.matchAll(summarizeRegex)];
+
+        for (const match of matches) {
+            if (match[0]) {
+                const summary = await this.getSummary(match[1], match[2]);
+                processedContent = processedContent.replace(match[0], summary);
+            }
+        }
+    }
+
+    private async getInstuctionSet(): Promise<string> {
+
+        await this.processInstructionsFile();
+        //read instructions from file .vscode/instructions.md from the workspaceFolder
+        const filePath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions.md');
+        var instructions = 'No instructions found!';
+        try {
+            instructions = fs.readFileSync(filePath, 'utf8');
+        } catch (err) {
+        }
+        return instructions;
+    }
+
+    async showInstuctionSet() {
+        this._panel.webview.postMessage({ command: 'instructions-data', data: await this.getInstuctionSet() });
+    }
+
 }

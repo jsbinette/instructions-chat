@@ -1,16 +1,16 @@
 {
-  "name": "vscode-chat-gpt",
-  "displayName": "vscode-chat-gpt",
-  "description": "Extension uses ChatGpt Api to make chat compilations and image generations.",
-  "version": "1.2.0",
-  "publisher": "ikasann-self",
+  "name": "instructions-chat",
+  "displayName": "Instructions Chat",
+  "description": "Extension uses ChatGpt Api to write long texts.",
+  "version": "1.2.2",
+  "publisher": "jsbinette",
   "bugs": {
-    "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension/issues",
-    "email": "ismailkasan63@gmail.com"
+    "url": "https://github.com/jsbinette/instrucitons-chat/issues",
+    "email": "jsbinette@yahoo.com"
   },
-  "homepage": "https://github.com/ismailkasan/chat-gpt-vscode-extension/main/README.md",
+  "homepage": "https://github.com/jsbinette/instrucitons-chat/main/README.md",
   "repository": {
-    "url": "https://github.com/ismailkasan/chat-gpt-vscode-extension",
+    "url": "https://github.com/ismailkasan/instrucitons-chat",
     "type": "git"
   },
   "keywords": [
@@ -20,7 +20,7 @@
     "chat",
     "ai"
   ],
-  "icon": "out/media/chat-gpt-logo.jpeg",
+  "icon": "out/media/chat-instruciton-logo@4x.png",
   "galleryBanner": {
     "color": "#0000FF",
     "theme": "dark"
@@ -121,8 +121,8 @@
       {
         "viewType": "markdown.preview",
         "icon": {
-          "light": "./out/media/chat-gpt-logo.jpeg",
-          "dark": "./out/media/chat-gpt-logo.jpeg"
+          "light": "./out/media/chat-instruciton-logo@4x.png",
+          "dark": "./out/media/chat-instruciton-logo@4x.png"
         }
       }
     ]

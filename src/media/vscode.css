@@ -123,6 +123,10 @@ textarea::placeholder {
 	white-space: pre-wrap;
 	color: #88b2cb; /* #cccccc */
 	background-color: transparent;
+	padding: 0px;
+}
+.pre {
+	margin-top: 0;
 }
 
 .danger {
@@ -130,11 +134,21 @@ textarea::placeholder {
 	background-color: #d9534f;
 	border-color: #d43f3a
 }
-
-.answer-header {
-	margin-top: -5px;
+.grayish {
+	background-color: #404040;
+}
+.instruction-button {
+	color: #fff;
+	background-color: #22825e;
 }
 
+.answer-header {
+	padding-top: 12px;
+}
+
+.instructions {
+	color: #88cbb2;
+}
 
 .flex-container {
 	display: flex;
@@ -154,6 +168,11 @@ textarea::placeholder {
 	bottom: 0;
 	position: absolute;
 	margin-bottom: 20px;
+}
+.userChatLog {
+	color: chocolate;
+	padding-top: 15px;
+	padding-bottom: 15px;
 }
 
 .label-control {

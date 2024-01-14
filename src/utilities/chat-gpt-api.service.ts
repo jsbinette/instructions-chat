@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
  * @param apikey of ChatGpt.
  * @returns 
  */
-export async function askToChatGpt(query: string | undefined, apiKey: string) {
+export async function askToChatGpt(query: string | undefined, apiKey: string): Promise<string> {
     try {
         // 👇️ const response: Response
         const response = await fetch('https://api.openai.com/v1/chat/completions', {

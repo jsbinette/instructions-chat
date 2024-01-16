@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Side Bar View Provider
 	const provider = new SideBarViewProvider(context.extensionUri, context);
 
-	context.subscriptions.push(vscode.window.registerWebviewViewProvider(SideBarViewProvider.viewType, provider));
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider(SideBarViewProvider.viewType, provider, { webviewOptions: { retainContextWhenHidden: true }}));
 
 	const storeData = getStoreData(context);
 	registerCommand(storeData.apiKey);

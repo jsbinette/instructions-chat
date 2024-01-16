@@ -52,7 +52,9 @@ export class ChatGptPanel {
                 // Enable javascript in the webview.
                 enableScripts: true,
                 // Restrict the webview to only load resources from the `out` directory.
-                localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')]
+                localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'out')],
+                // retain info when panel is hidden
+                retainContextWhenHidden: true
             });
 
             const logoMainPath = getVSCodeUri(extensionUri, ['out/media', 'chat-gpt-logo.jpeg']);
@@ -197,6 +199,10 @@ export class ChatGptPanel {
      * @param question :string
      */
     private _askToChatGpt(question: string, system_content: string = "") {
+        if (question == undefined || question == null || question == '') {
+            vscode.window.showInformationMessage('Please enter a question!');
+            return;
+        }
         const storeData = getStoreData(this._context);
         const existApiKey = storeData.apiKey;
         const existTemperature = storeData.temperature;
@@ -213,7 +219,9 @@ export class ChatGptPanel {
             let messages = getChatData(this._context);
             //if it's empty this is where we add the system message
             if (messages.length == 0) {
-                messages.push({ role: "system", content: system_content });
+                if (system_content != "") {
+                    messages.push({ role: "system", content: system_content });
+                }
             }
             messages.push(questionMessage);
             setChatData(this._context, messages);

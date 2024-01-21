@@ -98,7 +98,12 @@ export class ChatGptPanel {
 
                 switch (command) {
                     case "press-ask-button":
-                        this._askToChatGpt(message.data, await this.getInstuctionSet());
+                        let instrucions = await this.getInstuctionSet();
+                        if (instrucions.length >31000) {
+                            vscode.window.showInformationMessage('Instrucitons too long');
+                            return;
+                        }
+                        this._askToChatGpt(message.data,instrucions);
                         this.addHistoryToStore(message.data);
                         return;
                     case "press-ask-no-instr-button":
@@ -262,7 +267,7 @@ export class ChatGptPanel {
     private async getSummary(variables: string, text: string): Promise<string> {
         const params = variables.split(',');
         const name = params[0];
-        let orig_ratio = params.length > 1 ? params[1] : '1/10';
+        let orig_ratio = params.length > 1 ? params[1].trim() : '1/10';
         let ratio = orig_ratio.replace('1/', 'one_in_');
         let workspacePath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
         const summaryDirPath = path.join(workspacePath, '.vscode', 'summaries');
@@ -278,7 +283,7 @@ export class ChatGptPanel {
 
 
         const summaryFilePath = path.join(summaryDirPath, `${name}_${ratio}.md`);
-        const summarySourcePath = path.join(summarySourceDirPath, `${name}_${ratio}.txt`);
+        const summarySourcePath = path.join(summarySourceDirPath, `${name}_${ratio}.md`);
 
         if (!fs.existsSync(summarySourcePath) || fs.readFileSync(summarySourcePath, 'utf8') !== text || !fs.existsSync(summaryFilePath)) {
             // Update the summary

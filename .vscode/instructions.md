@@ -7,21 +7,21 @@
         for (const match of matches) {
             if (match[0]) {
                 const summary = await this.getSummary(match[1], match[2]);
-                processedContent = processedContent.replace(match[0], summary);
+                processedContent = processedContent.replace(match[0], summary + '\n');
             }
         }
+
+        fs.writeFileSync(outputFilename, processedContent);
     }
 
     private async getInstuctionSet(): Promise<string> {
 
         await this.processInstructionsFile();
         //read instructions from file .vscode/instructions.md from the workspaceFolder
-        const filePath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions.md');
+        const filePath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions-processed.md');
         var instructions = 'No instructions found!';
-        try {
-            instructions = fs.readFileSync(filePath, 'utf8');
-        } catch (err) {
-        }
+        instructions = fs.readFileSync(filePath, 'utf8');
+        this._panel.webview.postMessage({ command: 'upadate-instructions-character-count', data: instructions.length });
         return instructions;
     }
 

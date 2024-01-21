@@ -99,11 +99,11 @@ export class ChatGptPanel {
                 switch (command) {
                     case "press-ask-button":
                         let instrucions = await this.getInstuctionSet();
-                        if (instrucions.length >31000) {
+                        if (instrucions.length > 120000) {
                             vscode.window.showInformationMessage('Instrucitons too long');
                             return;
                         }
-                        this._askToChatGpt(message.data,instrucions);
+                        this._askToChatGpt(message.data, instrucions);
                         this.addHistoryToStore(message.data);
                         return;
                     case "press-ask-no-instr-button":
@@ -176,9 +176,8 @@ export class ChatGptPanel {
               <vscode-button class="grayish" id="show-history-button">Show History</vscode-button>
               <vscode-button class="grayish" id="clear-history-button">Clear History</vscode-button>
               <vscode-button id="show-instructions-button" class="instruction-button">Show Instructions</vscode-button>
-              <vscode-progress-ring id="progress-ring-id"></vscode-progress-ring>
-            </div>
-            </div>
+              <div id="instructions-character-count"></div>
+              <vscode-progress-ring id="progress-ring-id" class="progress-ring"></vscode-progress-ring>
             </div>
             <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
           </body>
@@ -289,7 +288,7 @@ export class ChatGptPanel {
             // Update the summary
             fs.writeFileSync(summarySourcePath, text);
             const storeData = getStoreData(this._context);
-            const summary = await askToChatGpt(`Please summarize the following text: '''${text}''' The length of the summary should be ${orig_ratio} of the original text. Output only the summary. You can use markdown to format the summary.`, storeData.apiKey);
+            const summary = await askToChatGpt(`Please summarize the following text: '''${text}''' The length of the summary should be ${orig_ratio} of the original text. Output only the summary but keep the title.  Following the title add in parenthesis (Summary ratio ${orig_ratio}) to indicate this is a summary. You can use markdown to format the summary.`, storeData.apiKey);
             fs.writeFileSync(summaryFilePath, summary);
         }
 
@@ -307,7 +306,7 @@ export class ChatGptPanel {
         for (const match of matches) {
             if (match[0]) {
                 const summary = await this.getSummary(match[1], match[2]);
-                processedContent = processedContent.replace(match[0], summary);
+                processedContent = processedContent.replace(match[0], summary + '\n');
             }
         }
 
@@ -320,10 +319,8 @@ export class ChatGptPanel {
         //read instructions from file .vscode/instructions.md from the workspaceFolder
         const filePath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions-processed.md');
         var instructions = 'No instructions found!';
-        try {
-            instructions = fs.readFileSync(filePath, 'utf8');
-        } catch (err) {
-        }
+        instructions = fs.readFileSync(filePath, 'utf8');
+        this._panel.webview.postMessage({ command: 'upadate-instructions-character-count', data: instructions.length });
         return instructions;
     }
 

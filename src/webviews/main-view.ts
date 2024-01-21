@@ -13,7 +13,7 @@ import {
 /**
  * Register "@vscode/webview-ui-toolkit" component to vscode design system.
  */
-provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeProgressRing(), vsCodeTextArea(), vsCodeDivider(), vsCodeProgressRing(), vsCodeTextField());
+provideVSCodeDesignSystem().register(vsCodeButton(), vsCodeProgressRing(), vsCodeTextArea(), vsCodeDivider(), vsCodeTextField());
 
 const vscode = acquireVsCodeApi();
 
@@ -37,6 +37,7 @@ const clearButton = document.getElementById("clear-button-id") as Button;
 const showHistoryButton = document.getElementById("show-history-button");
 const clearHistoryButton = document.getElementById("clear-history-button");
 const showInstructionsButton = document.getElementById("show-instructions-button");
+const characterCount = document.getElementById("instructions-character-count") as HTMLElement;
 
 // image
 const askImageButton = document.getElementById("ask-image-button-id") as Button;
@@ -87,6 +88,7 @@ function main() {
             switch (message.command) {
                 case 'answer':
                     // Append answer.
+                    hideProgressRing();
                     const data = document.createTextNode(message.data);
                     answer?.appendChild(data);
                     break;
@@ -106,7 +108,12 @@ function main() {
                     hideProgressRing();
                     break;
                 case 'instructions-data':
+                    hideProgressRing();
                     instructions.innerHTML = message.data
+                    break;
+                case 'upadate-instructions-character-count':
+                    characterCount.textContent = message.data;
+                    break;
                 case 'error':
                     break;
             }
@@ -123,7 +130,7 @@ function main() {
  * Handle ask button click event.
  */
 function handleAskClick() {
-
+    showProgressRing();
     // Send messages to Panel.
     vscode.postMessage({
         command: "press-ask-button",
@@ -142,11 +149,10 @@ function handleAskClick() {
 
     addHistory(chatQuestionTextArea.value);
     chatQuestionTextArea.value = ''
-
 }
 
 function handleAskNoInstrClick() {
-
+    showProgressRing();
     // Send messages to Panel.
     vscode.postMessage({
         command: "press-ask-no-instr-button",
@@ -211,6 +217,7 @@ function handleClearHistoryButtonClick() {
 function handleShowInstructionsButtonClick() {
     const el = document.getElementById('instructions-id');
     if (el?.style.getPropertyValue("display") == "none")  {
+        showProgressRing();
         vscode.postMessage({ command: 'show-instructions-set' });
         el?.style.setProperty("display", "block")
     }

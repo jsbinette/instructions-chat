@@ -76,22 +76,20 @@ export function askToChatGptAsStream(query: Array<any> | undefined, apiKey: stri
                     const eventStr = chunk.split('\n\n');
                     for (let i = 0; i < eventStr.length; i++) {
                         const str = eventStr[i];
-                        if (str === 'data: [DONE]') {
+                        const jsonStr = str.replace('data: ', '').trim();
+                        if (jsonStr === '[DONE]') {
                             observer.next('END MESSAGE');
                         }
-                        if (str && str.slice(0, 6) === 'data: ') {
-                            const jsonStr = str.slice(6);
-                            try {
-                                const data: any = JSON.parse(jsonStr);
-                                const thisContent = data.choices[0].delta?.content || '';
-                                content += thisContent;
-                                observer.next(thisContent);
-                            } catch (error) {
-                                if (error instanceof Error) {
+                        try {
+                            const data: any = JSON.parse(jsonStr);
+                            const thisContent = data.choices[0].delta?.content || '';
+                            content += thisContent;
+                            observer.next(thisContent);
+                        } catch (error) {
+                            if (error instanceof Error) {
                                 console.log('error message: ', error.message);
                                 //the issue I get is the initial data coming back is not valid JSON
                                 //observer.error(error.message);
-                                }   
                             }
                         }
                     }

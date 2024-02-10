@@ -104,6 +104,9 @@ textarea::placeholder {
 	color: var(--vscode-input-placeholderForeground);
 }
 
+#question-text-id {
+	font-size: larger;
+}
 
 .text-area {
 	width: 100%;

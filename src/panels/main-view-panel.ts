@@ -168,7 +168,10 @@ export class ChatGptPanel {
             <pre class="pre"><code class="code" id="answers-id"></code></pre>
             </div>
             <div class="bottom-section">
-            <vscode-text-area class="text-area mt-20" id="question-text-id" cols="100">Question:</vscode-text-area>
+            <div class="text-area mt-20">
+                <label>Question:</label>
+                <textarea id="question-text-id" class="question-text" rows="3" cols="100"></textarea>
+            </div>
             <div class="flex-container" style="margin-bottom:15px">
               <vscode-button id="ask-button-id">Ask</vscode-button>
               <vscode-button id="ask-no-instructions-button-id">Ask (No instructions)</vscode-button>

@@ -34,6 +34,7 @@ This extension is meant to work with it's sister extension (Instructions by the 
 - V1.2.4 Added progress ring;changed formating, handled missing instructions.
 - V1.2.5 Fixed change of data model from OpenAI. Updated model to gpt-4-turbo-preview.
 - V1.2.6 create .vscode on the fly if needed, changed model to gpt-4-turbo.
+- V1.3 change the default folder to .instructions (this will correspond to v1.0.1 in instruction-extension).
 
 ## Using Extension
 

@@ -272,8 +272,8 @@ export class ChatGptPanel {
         let orig_ratio = params.length > 1 ? params[1].trim() : '1/10';
         let ratio = orig_ratio.replace('1/', 'one_in_');
         let workspacePath = vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders[0].uri.fsPath : '';
-        const summaryDirPath = path.join(workspacePath, '.vscode', 'summaries');
-        const summarySourceDirPath = path.join(workspacePath, '.vscode', 'summary_sources');
+        const summaryDirPath = path.join(workspacePath, '.instructions', 'summaries');
+        const summarySourceDirPath = path.join(workspacePath, '.instructions', 'summary_sources');
 
         // Ensure the directories exist
         if (!fs.existsSync(summaryDirPath)) {
@@ -300,9 +300,9 @@ export class ChatGptPanel {
 
     private async processInstructionsFile(): Promise<void> {
         const summarizeRegex = /@summarize\((.*?)\)\s([\s\S]*?)@end-summarize/g;
-        const vscodeDirPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode');
-        const inputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions.md');
-        const outputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions-processed.md');
+        const vscodeDirPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.instructions');
+        const inputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.instructions', 'instructions.md');
+        const outputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.instructions', 'instructions-processed.md');
 
         if (!fs.existsSync(vscodeDirPath)) {
             fs.mkdirSync(vscodeDirPath);
@@ -330,8 +330,8 @@ export class ChatGptPanel {
     private async getInstuctionSet(): Promise<string> {
 
         await this.processInstructionsFile();
-        //read instructions from file .vscode/instructions.md from the workspaceFolder
-        const filePath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions-processed.md');
+        //read instructions from file .instructions/instructions.md from the workspaceFolder
+        const filePath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.instructions', 'instructions-processed.md');
         var instructions = 'No instructions found!';
         instructions = fs.readFileSync(filePath, 'utf8');
         this._panel.webview.postMessage({ command: 'upadate-instructions-character-count', data: instructions.length });

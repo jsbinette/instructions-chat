@@ -1,8 +1,8 @@
 {
   "name": "instructions-chat",
   "displayName": "Instructions Chat",
-  "description": "Extension uses ChatGpt Api to write long texts.",
-  "version": "1.2.5",
+  "description": "Extension uses ChatGpt Api to write long texts (works in tandem with Instructions extension by the same author)",
+  "version": "1.2.6",
   "publisher": "jsbinette",
   "bugs": {
     "url": "https://github.com/jsbinette/instrucitons-chat/issues",

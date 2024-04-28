@@ -300,10 +300,21 @@ export class ChatGptPanel {
 
     private async processInstructionsFile(): Promise<void> {
         const summarizeRegex = /@summarize\((.*?)\)\s([\s\S]*?)@end-summarize/g;
-
+        const vscodeDirPath = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode');
         const inputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions.md');
         const outputFilename = path.join(vscode.workspace.workspaceFolders![0].uri.fsPath, '.vscode', 'instructions-processed.md');
-        const content = fs.readFileSync(inputFilename, 'utf8'); let processedContent = content;
+
+        if (!fs.existsSync(vscodeDirPath)) {
+            fs.mkdirSync(vscodeDirPath);
+        }
+
+        if (!fs.existsSync(inputFilename)) {
+            fs.writeFileSync(inputFilename, '');
+        }
+
+        const content = fs.readFileSync(inputFilename, 'utf8');
+        let processedContent = content;
+
         const matches = [...content.matchAll(summarizeRegex)];
 
         for (const match of matches) {

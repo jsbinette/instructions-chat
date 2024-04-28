@@ -150,7 +150,7 @@ export class SideBarViewProvider implements vscode.WebviewViewProvider {
 			<script nonce="${nonce}" src="${scriptUri}"></script>
 			<div class="model">
 				<p> Editor model:<a href="https://platform.openai.com/docs/models/gpt-3-5"> ${'text-davinci-003'}</a></p>
-				<p> Chat model:<a href="https://platform.openai.com/docs/models"> ${'gpt-4-turbo-preview'}</a></p>
+				<p> Chat model:<a href="https://platform.openai.com/docs/models"> ${'gpt-4-turbo'}</a></p>
 				<p> Image model:<a href="https://platform.openai.com/docs/models/dall-e"> ${'DALL·E'}</a></p>
 			<div>
 			</body>

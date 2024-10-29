@@ -14,7 +14,7 @@ export async function askToChatGpt(query: string | undefined, apiKey: string): P
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             body: JSON.stringify({
-                model: "gpt-4-turbo",
+                model: "GPT-4o",
                 messages: [{ role: "user", content: query }],
                 temperature: 1
             }),
@@ -56,7 +56,7 @@ export function askToChatGptAsStream(query: Array<any> | undefined, apiKey: stri
         const response = fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             body: JSON.stringify({
-                model: "gpt-4-turbo",
+                model: "gpt-4o",
                 messages: query,
                 // temperature: 0.7,
                 temperature: Number(temperature),
